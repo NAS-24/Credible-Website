@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Credible — Real‑time Credibility Signals</title>
+  <meta name="description" content="Credible — agentic AI extension that provides context-aware credibility signals on search results." />
+  
+  <link rel="icon" type="image/png" href="icons/icon48.png">
+
+  <style>
+    /* --- BASE VARIABLES --- */
+    :root {
+      --primary: #0f1724;
+      --secondary: #1e293b;
+      --accent: #3b82f6;
+      --accent-light: #60a5fa;
+      --accent-dark: #1d4ed8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text-light: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dark: #0f172a;
+      --card-bg: #ffffff;
+      --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      --gradient-primary: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+      --gradient-accent: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+      --gradient-dark: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      --max-width: 1200px;
+      --border-radius: 12px;
+      --border-radius-lg: 16px;
+      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    html, body { height: 100%; scroll-behavior: smooth; }
+    
+    body {
+      background: var(--gradient-dark);
+      color: var(--text-light);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    
+    a { color: inherit; text-decoration: none; transition: all 0.2s ease; }
+    
+    /* --- TYPOGRAPHY --- */
+    h1, h2, h3, h4, h5, h6 { font-weight: 700; line-height: 1.2; margin-bottom: 1rem; }
+    h1 { font-size: 3.5rem; letter-spacing: -0.025em; }
+    h2 { font-size: 2.5rem; }
+    h3 { font-size: 2rem; }
+    h4 { font-size: 1.5rem; }
+    h5 { font-size: 1.25rem; }
+    p { margin-bottom: 1rem; }
+    
+    .text-accent { color: var(--accent-light); }
+    .text-muted { color: var(--text-muted); }
+    .text-center { text-align: center; }
+    
+    /* --- LAYOUT --- */
+    .container { max-width: var(--max-width); margin: 0 auto; padding: 0 1.5rem; }
+    .section { padding: 5rem 0; }
+    .section-sm { padding: 3rem 0; }
+    
+    /* --- BUTTONS --- */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 0.75rem 1.5rem; border-radius: var(--border-radius);
+      font-weight: 600; font-size: 0.95rem; cursor: pointer;
+      transition: all 0.2s ease; border: none; outline: none; gap: 0.5rem;
+    }
+    
+    .btn-primary { background: var(--gradient-accent); color: white; box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.4); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5); }
+    
+    .btn-secondary { background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.2); }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-2px); }
+    
+    .btn-outline { background: transparent; color: white; border: 1px solid rgba(255, 255, 255, 0.3); }
+    .btn-outline:hover { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.5); }
+    .btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+    /* --- HEADER --- */
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.5rem 1.5rem; position: sticky; top: 0; z-index: 100;
+      background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px);
+      border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+      margin: 0 1.5rem; border: 1px solid rgba(255, 255, 255, 0.1); border-top: none;
+    }
+    
+    .brand { display: flex; align-items: center; gap: 0.75rem; }
+    .logo { width: 48px; height: 48px; border-radius: 8px; object-fit: contain; }
+    .brand-text { display: flex; flex-direction: column; }
+    .brand-name { font-weight: 700; font-size: 1.25rem; }
+    .brand-tagline { font-size: 0.75rem; color: var(--text-muted); }
+    
+    nav { display: flex; gap: 1.5rem; align-items: center; }
+    .nav-link { color: var(--text-muted); font-weight: 500; transition: color 0.2s ease; }
+    .nav-link:hover { color: white; }
+    
+    /* --- HERO SECTION --- */
+    .hero {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 4rem; align-items: center; padding: 6rem 0 4rem;
+    }
+    .hero-content h1 { margin-bottom: 1.5rem; }
+    .hero-description { font-size: 1.25rem; color: var(--text-muted); margin-bottom: 2rem; }
+    .hero-actions { display: flex; gap: 1rem; margin-bottom: 2rem; }
+    .hero-visual { position: relative; }
+    
+    /* --- INTERACTIVE DEMO CARD --- */
+    .mock-card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius-lg);
+      padding: 1.5rem;
+      box-shadow: var(--card-shadow);
+      color: var(--text-dark);
+      position: relative;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      min-height: 280px; /* Ensure space for results */
+    }
+    
+    .mock-card::before {
+      content: ''; position: absolute; top: 0; left: 0;
+      width: 100%; height: 4px; background: var(--gradient-accent);
+    }
+    
+    .mock-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+    .mock-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--gradient-accent); }
+    .mock-title { font-weight: 600; font-size: 1rem; }
+    
+    .mock-content {
+      flex-grow: 1; display: flex; flex-direction: column;
+      margin-bottom: 1rem; position: relative;
+    }
+    
+    /* Demo Input Styling */
+    .mock-input {
+      width: 100%; min-height: 100px;
+      padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px;
+      background: #f8fafc; font-family: inherit; font-size: 0.95rem; color: #334155;
+      resize: none; outline: none; transition: border 0.2s, background 0.2s;
+    }
+    .mock-input:focus { border-color: var(--accent); background: #ffffff; }
+
+    /* Demo Result Styling */
+    .mock-result {
+      margin-top: 15px; padding: 12px; border-radius: 8px;
+      background: #fff; border-left: 4px solid #ccc;
+      font-size: 0.9rem; animation: fadeIn 0.4s ease;
+    }
+    .result-verified { background: #f0fdf4; border-color: #22c55e; color: #15803d; }
+    .result-false { background: #fef2f2; border-color: #ef4444; color: #b91c1c; }
+    .result-unsure { background: #fff7ed; border-color: #f97316; color: #c2410c; }
+    
+    .source-link { display: block; margin-top: 8px; font-size: 0.8rem; color: #64748b; font-weight: 600; }
+    .source-link a { color: var(--accent); text-decoration: underline; }
+
+    /* Spinner */
+    .spinner {
+      width: 20px; height: 20px; border: 3px solid #e2e8f0;
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin 1s linear infinite; display: none;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    .mock-actions { display: flex; gap: 0.75rem; justify-content: flex-end; align-items: center; }
+    
+    /* --- ABOUT SECTION --- */
+    .about-section { margin-bottom: 5rem; }
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; }
+    .about-content { padding-right: 2rem; }
+    .about-visual { display: flex; justify-content: center; }
+    
+    .about-card {
+      background: rgba(255, 255, 255, 0.05); border-radius: var(--border-radius-lg);
+      padding: 2rem; border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+    
+    .about-features { margin-top: 2rem; }
+    .about-feature { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem; }
+    .about-feature:last-child { margin-bottom: 0; }
+    
+    .feature-icon-sm {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: var(--gradient-accent); display: flex;
+      align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.25rem;
+    }
+    
+    /* --- STEPS --- */
+    .steps-section { margin-bottom: 5rem; }
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+    
+    .step {
+      background: rgba(255, 255, 255, 0.05); border-radius: var(--border-radius);
+      padding: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+    .step:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); }
+    
+    .step-number {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--gradient-accent); color: white;
+      font-weight: 700; margin-bottom: 1rem;
+    }
+    
+    /* --- COMPARISON --- */
+    .comparison-section { margin-bottom: 5rem; }
+    .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
+    
+    .comparison-card {
+      border-radius: var(--border-radius); padding: 2rem;
+      position: relative; overflow: hidden;
+    }
+    .comparison-bad {
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      color: #7f1d1d; border-left: 4px solid #ef4444;
+    }
+    .comparison-good {
+      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+      color: #064e3b; border-left: 4px solid #10b981;
+    }
+    .comparison-icon {
+      position: absolute; top: 1rem; right: 1rem;
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 1.25rem;
+    }
+    .comparison-bad .comparison-icon { background: #fecaca; color: #dc2626; }
+    .comparison-good .comparison-icon { background: #a7f3d0; color: #059669; }
+    
+    /* --- FEATURES GRID --- */
+    .features-section { margin-bottom: 5rem; }
+    .features { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 2rem; }
+    
+    .feature {
+      background: rgba(255, 255, 255, 0.05); border-radius: var(--border-radius);
+      padding: 2rem; border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease; display: flex; flex-direction: column; align-items: flex-start;
+    }
+    .feature:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); }
+    
+    .feature-icon-lg {
+      width: 60px; height: 60px; border-radius: 12px;
+      background: var(--gradient-accent); display: flex;
+      align-items: center; justify-content: center; margin-bottom: 1.5rem; font-size: 1.5rem;
+    }
+    
+    /* --- SOLUTIONS --- */
+    .solutions-section { margin-bottom: 5rem; }
+    .solutions { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem; }
+    
+    .solution-card {
+      border-radius: var(--border-radius-lg); padding: 2.5rem 2rem;
+      position: relative; overflow: hidden; transition: all 0.3s ease;
+    }
+    .solution-card:hover { transform: translateY(-5px); }
+    
+    .solution-personal { background: var(--card-bg); color: var(--text-dark); box-shadow: var(--card-shadow); }
+    .solution-business { background: var(--gradient-primary); color: white; box-shadow: 0 10px 25px -5px rgba(30, 64, 175, 0.3); }
+    
+    .solution-badge {
+      position: absolute; top: 0; right: 0; background: var(--accent);
+      color: white; padding: 0.5rem 1rem; border-radius: 0 0 0 var(--border-radius);
+      font-size: 0.75rem; font-weight: 600;
+    }
+    
+    .solution-features { margin: 1.5rem 0; }
+    .solution-feature { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .solution-feature:last-child { margin-bottom: 0; }
+    
+    .feature-check {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--success); display: flex;
+      align-items: center; justify-content: center;
+      color: white; font-size: 0.75rem;
+    }
+    .solution-personal .feature-check { background: var(--success); }
+    .solution-business .feature-check { background: rgba(255, 255, 255, 0.2); }
+    
+    /* --- FOOTER --- */
+    footer { background: rgba(0, 0, 0, 0.2); padding: 3rem 0; text-align: center; }
+    .footer-brand { margin-bottom: 1.5rem; }
+    .footer-links { display: flex; justify-content: center; gap: 2rem; margin-bottom: 2rem; }
+    .footer-link { color: var(--text-muted); transition: color 0.2s ease; }
+    .footer-link:hover { color: white; }
+    .footer-copyright { color: var(--text-muted); font-size: 0.875rem; }
+    
+    /* --- ANIMATIONS --- */
+    .fade-up {
+      opacity: 0; transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+    
+    /* --- RESPONSIVE --- */
+    @media (max-width: 1024px) {
+      h1 { font-size: 2.75rem; }
+      h2 { font-size: 2.25rem; }
+      .hero { grid-template-columns: 1fr; gap: 3rem; padding: 4rem 0 2rem; text-align: center; }
+      .hero-visual { order: -1; }
+      .hero-actions { justify-content: center; }
+      .about-grid { grid-template-columns: 1fr; gap: 2rem; }
+      .about-content { padding-right: 0; }
+      .features { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    @media (max-width: 768px) {
+      .container { padding: 0 1rem; }
+      h1 { font-size: 2.25rem; }
+      h2 { font-size: 1.875rem; }
+      .hero-actions { flex-direction: column; align-items: center; }
+      .hero-actions .btn { width: 100%; }
+      .comparison { grid-template-columns: 1fr; }
+      .footer-links { flex-direction: column; gap: 1rem; }
+      nav { display: none; } /* Mobile Menu Placeholder */
+      .features { grid-template-columns: 1fr; }
+      header { margin: 0 1rem; padding: 1rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div class="brand">
+        <img src="icons/icon48.png" alt="Credible Logo" class="logo">
+        <div class="brand-text">
+          <div class="brand-name">Credible</div>
+          <div class="brand-tagline">Agentic AI Browser Extension</div>
+        </div>
+      </div>
+      <nav>
+        <a href="#about" class="nav-link">About</a>
+        <a href="#how-it-works" class="nav-link">How It Works</a>
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#solutions" class="nav-link">Solutions</a>
+        <a href="https://microsoftedge.microsoft.com/addons/detail/credible-agentic-factch/glhckknhelfandbhbibnmdkpebacokpk" target="_blank" class="btn btn-primary">Install Extension</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="hero-content fade-up">
+        <h1>Leverage <span class="text-accent">AI</span> for <span class="text-accent">Credibility</span></h1>
+        <p class="hero-description">Credible gives real‑time, context‑aware credibility signals directly in your browser. Grounded verification, source prioritization, and geographic sensitivity—all without leaving your search results.</p>
+        
+        <div class="hero-actions">
+          <a href="https://microsoftedge.microsoft.com/addons/detail/credible-agentic-factch/glhckknhelfandbhbibnmdkpebacokpk" target="_blank" class="btn btn-primary">Install Free Extension</a>
+          <button class="btn btn-outline">Learn More</button>
+        </div>
+      </div>
+      
+      <div class="hero-visual fade-up">
+        <div class="mock-card">
+          <div class="mock-header">
+            <div class="mock-avatar"></div>
+            <div class="mock-title">Credible Assistant</div>
+          </div>
+          
+          <div class="mock-content" id="demo-container">
+            <textarea id="demo-input" class="mock-input" placeholder="Paste a claim or article snippet here to verify..."></textarea>
+            
+            <div id="demo-result" class="mock-result" style="display: none;"></div>
+          </div>
+
+          <div class="mock-actions">
+            <div class="spinner" id="demo-spinner"></div>
+            <button class="btn btn-secondary" onclick="clearDemo()">Clear</button>
+            <button class="btn btn-primary" onclick="runDemo()" id="run-btn">Run Verification</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="about-section section">
+      <div class="about-grid">
+        <div class="about-content fade-up">
+          <h2>About Credible</h2>
+          <p class="text-muted">Credible is a revolutionary browser extension that uses advanced AI to help you navigate the complex information landscape with confidence.</p>
+          
+          <p>In today's digital world, misinformation spreads faster than ever before. Credible addresses this challenge by providing real-time credibility assessments directly within your browsing experience.</p>
+          
+          <div class="about-features">
+            <div class="about-feature">
+              <div class="feature-icon-sm">🔍</div>
+              <div class="feature-content">
+                <h4>Instant Verification</h4>
+                <p class="text-muted">Get immediate credibility signals for any claim or article without interrupting your workflow.</p>
+              </div>
+            </div>
+            
+            <div class="about-feature">
+              <div class="feature-icon-sm">🌐</div>
+              <div class="feature-content">
+                <h4>Context-Aware Analysis</h4>
+                <p class="text-muted">Our AI understands regional contexts and cultural nuances for more accurate assessments.</p>
+              </div>
+            </div>
+            
+            <div class="about-feature">
+              <div class="feature-icon-sm">🛡️</div>
+              <div class="feature-content">
+                <h4>Privacy-First Approach</h4>
+                <p class="text-muted">Your data stays on your device. We prioritize your privacy while delivering powerful insights.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="about-visual fade-up">
+          <div class="about-card">
+            <h3 class="text-accent">How Credible Helps You</h3>
+            <div class="solution-features">
+              <div class="solution-feature">
+                <div class="feature-check">✓</div>
+                <span>Identify misinformation before sharing</span>
+              </div>
+              <div class="solution-feature">
+                <div class="feature-check">✓</div>
+                <span>Save time on manual fact-checking</span>
+              </div>
+              <div class="solution-feature">
+                <div class="feature-check">✓</div>
+                <span>Make informed decisions with confidence</span>
+              </div>
+              <div class="solution-feature">
+                <div class="feature-check">✓</div>
+                <span>Protect yourself from online manipulation</span>
+              </div>
+              <div class="solution-feature">
+                <div class="feature-check">✓</div>
+                <span>Develop better media literacy skills</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how-it-works" class="steps-section section">
+      <h2 class="text-center">How Credible Works</h2>
+      <div class="steps">
+        <div class="step fade-up">
+          <div class="step-number">1</div>
+          <h5>Install the Extension</h5>
+          <p class="text-muted">Add Credible to Chrome/Firefox. It runs locally and processes requests securely.</p>
+        </div>
+        <div class="step fade-up">
+          <div class="step-number">2</div>
+          <h5>Type Your Query</h5>
+          <p class="text-muted">Highlight a claim or let Credible watch search results; it detects potential misinformation.</p>
+        </div>
+        <div class="step fade-up">
+          <div class="step-number">3</div>
+          <h5>Agented Verification</h5>
+          <p class="text-muted">Credible dispatches the Gemini agent to run targeted, multi‑step searches and prioritize evidence.</p>
+        </div>
+        <div class="step fade-up">
+          <div class="step-number">4</div>
+          <h5>Signal & Context</h5>
+          <p class="text-muted">Receive a layered verdict with links to evidence and geographic context.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="comparison-section section">
+      <h2 class="text-center">See Credible in Action</h2>
+      <div class="comparison">
+        <div class="comparison-card comparison-bad fade-up">
+          <div class="comparison-icon">⚠️</div>
+          <h4>Without Credible</h4>
+          <p>Search results contain viral articles and user comments; it's unclear which sources are trustworthy. Users may amplify misinformation.</p>
+        </div>
+        <div class="comparison-card comparison-good fade-up">
+          <div class="comparison-icon">✅</div>
+          <h4>With Credible</h4>
+          <p>Credible shows an evidence summary, flags low‑quality sources, and links authoritative articles—helping the user make an informed judgement.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="features-section section">
+      <h2 class="text-center">Why Choose Credible</h2>
+      <div class="features">
+        <div class="feature fade-up">
+          <div class="feature-icon-lg">🔒</div>
+          <h5>100% Local Processing</h5>
+          <p class="text-muted">Where possible, sensitive computations happen on the client. Requests to external APIs are minimized and signed when needed.</p>
+        </div>
+        <div class="feature fade-up">
+          <div class="feature-icon-lg">🧠</div>
+          <h5>Intelligent Detection</h5>
+          <p class="text-muted">Machine reasoning identifies claims, weighs evidence, and avoids simplistic True/False outputs.</p>
+        </div>
+        <div class="feature fade-up">
+          <div class="feature-icon-lg">🔗</div>
+          <h5>Seamless Integration</h5>
+          <p class="text-muted">Works alongside major AI tools and integrates with fact‑checking sources for richer context.</p>
+        </div>
+        <div class="feature fade-up">
+          <div class="feature-icon-lg">⚡</div>
+          <h5>Fast Performance</h5>
+          <p class="text-muted">Optimized verification paths return signals quickly without blocking the user's browsing flow.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="solutions" class="solutions-section section">
+      <h2 class="text-center">Credible Solutions</h2>
+      <div class="solutions">
+        <div class="solution-card solution-personal fade-up">
+          <h4>Personal Edition</h4>
+          <p class="text-muted">For individuals and researchers who want to surface reliable signals while browsing.</p>
+          
+          <div class="solution-features">
+            <div class="solution-feature">
+              <div class="feature-check">✓</div>
+              <span>Local claim detection & evidence summary</span>
+            </div>
+            <div class="solution-feature">
+              <div class="feature-check">✓</div>
+              <span>Geo‑aware prioritization</span>
+            </div>
+            <div class="solution-feature">
+              <div class="feature-check">✓</div>
+              <span>Weekly evidence digest</span>
+            </div>
+          </div>
+          
+          <a href="https://microsoftedge.microsoft.com/addons/detail/credible-agentic-factch/glhckknhelfandbhbibnmdkpebacokpk" target="_blank" class="btn btn-primary">Download Now</a>
+        </div>
+        
+        <div class="solution-card solution-business fade-up">
+          <div class="solution-badge">Coming Soon</div>
+          <h4>Business Edition</h4>
+          <p class="text-muted">Enterprise solutions for newsroom, platforms and NGOs with customizable policies and bulk monitoring.</p>
+          
+          <div class="solution-features">
+            <div class="solution-feature">
+              <div class="feature-check">✓</div>
+              <span>Advanced analytics dashboard</span>
+            </div>
+            <div class="solution-feature">
+              <div class="feature-check">✓</div>
+              <span>Custom verification policies</span>
+            </div>
+            <div class="solution-feature">
+              <div class="feature-check">✓</div>
+              <span>API access & bulk monitoring</span>
+            </div>
+          </div>
+          
+          <button class="btn btn-secondary" disabled>Coming Soon</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="section-sm">
+      <div class="footer-brand">
+        <div class="brand-name">Credible</div>
+      </div>
+      <div class="footer-links">
+        <a href="#" class="footer-link">Privacy Policy</a>
+        <a href="#" class="footer-link">Terms of Service</a>
+        <a href="#" class="footer-link">Contact Us</a>
+        <a href="#" class="footer-link">GitHub</a>
+      </div>
+      <div class="footer-copyright">© 2025 Credible. All rights reserved.</div>
+    </footer>
+  </div>
+
+  <script>
+    // --- SCROLL ANIMATIONS ---
+    document.addEventListener('DOMContentLoaded', function() {
+      const fadeElements = document.querySelectorAll('.fade-up');
+      const fadeObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1 });
+      
+      fadeElements.forEach(el => fadeObserver.observe(el));
+    });
+
+    // --- LIVE DEMO FUNCTIONALITY ---
+    const API_URL = "https://credible-factchecker.onrender.com/api/verify-text";
+
+    async function runDemo() {
+      const inputEl = document.getElementById('demo-input');
+      const resultEl = document.getElementById('demo-result');
+      const spinner = document.getElementById('demo-spinner');
+      const btn = document.getElementById('run-btn');
+      const text = inputEl.value.trim();
+
+      if (!text) {
+        inputEl.focus();
+        return;
+      }
+
+      // 1. Set Loading State
+      btn.disabled = true;
+      btn.innerText = "Verifying...";
+      spinner.style.display = "block";
+      resultEl.style.display = "none";
+
+      try {
+        // 2. Call the Real Backend
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: text })
+        });
+
+        if (!response.ok) throw new Error("Server error");
+        const data = await response.json();
+
+        // 3. Render Result
+        let resultClass = "result-unsure";
+        let title = data.verdict;
+        
+        if (data.verdict === "VERIFIED") resultClass = "result-verified";
+        if (data.verdict === "FALSE" || data.verdict === "MISLEADING") resultClass = "result-false";
+
+        resultEl.className = `mock-result ${resultClass}`;
+        
+        // Build Source Link safely
+        let sourceHtml = "";
+        if (data.sources && data.sources.length > 0) {
+          const domain = new URL(data.sources[0]).hostname;
+          sourceHtml = `<span class="source-link">Source: <a href="${data.sources[0]}" target="_blank">${domain}</a></span>`;
+        }
+
+        resultEl.innerHTML = `<strong>${title}</strong><br>${data.explanation} ${sourceHtml}`;
+        resultEl.style.display = "block";
+
+      } catch (error) {
+        resultEl.className = "mock-result result-false";
+        resultEl.innerHTML = `<strong>Error:</strong> Could not reach the verification server. Please check your connection.`;
+        resultEl.style.display = "block";
+        console.error(error);
+      } finally {
+        // 4. Reset State
+        btn.disabled = false;
+        btn.innerText = "Run Verification";
+        spinner.style.display = "none";
+      }
+    }
+
+    function clearDemo() {
+      document.getElementById('demo-input').value = "";
+      document.getElementById('demo-result').style.display = "none";
+      document.getElementById('demo-input').focus();
+    }
+  </script>
+</body>
+</html>
